@@ -33,7 +33,6 @@ jobs:
     - name: Build Linux
       if: matrix.os == 'ubuntu-22.04'
       run: |
-        cd application
         pyinstaller main.py --add-data "defaults:defaults" --add-data "README.md:." --add-data "LICENSE:." --onefile
         echo "Dist content:"
         ls -l dist/
@@ -46,7 +45,6 @@ jobs:
     - name: Build macOS
       if: matrix.os == 'macos-latest'
       run: |
-        cd application
         pyinstaller main.py --add-data "defaults:defaults" --add-data "README.md:." --add-data "LICENSE:." --onefile --windowed
         mv dist/main.app ../unvanquished_map_starter.app
         cd ..
