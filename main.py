@@ -2,7 +2,7 @@
 import os
 import shutil
 from pathlib import Path
-
+from check_unvanquished_folder import check_unvanquished_folder
 def prompt(prompt_text, default=None):
     if default:
         resp = input(f"{prompt_text} [{default}]: ").strip()
@@ -12,8 +12,11 @@ def prompt(prompt_text, default=None):
 def main():
     print("Unvanquished Maps Starter")
     print("=========================\n")
-
-    base_dir = prompt("Path to the target directory where to create the map")
+    unvanquished_folder = check_unvanquished_folder()
+    if unvanquished_folder is not None:
+        unvanquished_folder += "/pkg" if os.name == "posix" else "\pkg"
+    print(f"Please provide the path to your maps folder.\nDefault (detected): {unvanquished_folder}")
+    base_dir = prompt("Path to the target directory where to create the map", default=unvanquished_folder)
     if not base_dir:
         print("Error: empty target directory path.")
         return
