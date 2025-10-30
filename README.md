@@ -25,7 +25,29 @@ Here's how to run it:
 2. Navigate to the application directory (ex: `cd ~/Downloads`)
 3. Run: `./unvanquished_map_starter`
 
+## Map Naming Rules
+
+Map shortnames must follow these rules:
+- Only lowercase letters (a-z)
+- Hyphens (-) are allowed
+- No spaces
+- No special characters
+- No numbers
+- No underscores (_)
+
+Valid examples:
+- `my-map`
+- `canyon`
+- `secret-base`
+
+Invalid examples:
+- `my map` (contains space)
+- `map_01` (contains underscore and numbers)
+- `SecretBase` (contains uppercase letters)
+- `map@special` (contains special characters)
+
 ## Start Your Map in Unvanquished
+
 Once the map is created, you can start it in-game with:
 ```
 /devmap <mapname>

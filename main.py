@@ -9,6 +9,19 @@ def prompt(prompt_text, default=None):
         return resp if resp else default
     return input(f"{prompt_text}: ").strip()
 
+def is_valid_map_name(name):
+    """
+    Validate map name according to Unvanquished naming conventions:
+    - Only lowercase letters (a-z)
+    - Hyphens (-) are allowed
+    - No spaces
+    - No special characters
+    - No numbers
+    - No underscores
+    """
+    import re
+    return bool(re.match(r'^[a-z][a-z-]*[a-z]$', name)) and '--' not in name
+
 def main():
     print("Unvanquished Maps Starter")
     print("=========================\n")
@@ -23,10 +36,17 @@ def main():
     base_path = Path(base_dir).resolve()
     base_path.mkdir(parents=True, exist_ok=True)
 
-    short_name = prompt("Short name of the map (format short, without spaces, ex: my_map)").replace(" ", "_")
-    if not short_name:
-        print("Error: invalid short name.")
-        return
+    while True:
+        short_name = prompt("Short name of the map (lowercase letters and hyphens only, ex: my-map)")
+        if not short_name:
+            print("Error: map name cannot be empty.")
+            continue
+        if not is_valid_map_name(short_name):
+            print("Error: Invalid map name. Please use only lowercase letters and hyphens.")
+            print("The name must start and end with a letter, and cannot contain numbers or special characters.")
+            print("Example: my-map, canyon, base-secret")
+            continue
+        break
 
     long_name = prompt("Long name of the map (format long)")
     if not long_name:
