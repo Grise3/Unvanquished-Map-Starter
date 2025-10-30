@@ -6,7 +6,7 @@ on:
       tag:
         description: 'Tag for the release'
         required: true
-        default: 'V1'
+        default: 'v1.0.0'
 
 jobs:
   build:
@@ -24,78 +24,92 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.10'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
+        pip install pyinstaller
 
     - name: Build Linux
       if: matrix.os == 'ubuntu-22.04'
       run: |
-        pyinstaller main.py --add-data "defaults:defaults" --add-data "README.md:." --add-data "LICENSE:." --onefile
-        echo "Dist content:"
-        ls -l dist/
-        mv dist/main ../unvanquished_map_starter
-        cd ..
-        zip -r unvanquished_map_starter_linux.zip unvanquished_map_starter
-        rm -rf unvanquished_map_starter
-        rm -rf application/build application/dist application/app.spec
+        pyinstaller --name unvanquished_map_starter \
+          --add-data "defaults:defaults" \
+          --add-data "README.md:." \
+          --add-data "LICENSE:." \
+          --onefile \
+          main.py
         
+        chmod +x dist/unvanquished_map_starter
+        zip -j unvanquished_map_starter_linux.zip dist/unvanquished_map_starter
+
     - name: Build macOS
       if: matrix.os == 'macos-latest'
       run: |
-        pyinstaller main.py --add-data "defaults:defaults" --add-data "README.md:." --add-data "LICENSE:." --onefile --windowed
-        mv dist/main.app ../unvanquished_map_starter.app
-        cd ..
-        zip -r unvanquished_map_starter_macos.zip unvanquished_map_starter.app
-        rm -rf unvanquished_map_starter.app
-        rm -rf application/build application/dist application/main.spec
-
+        pyinstaller --name unvanquished_map_starter \
+          --add-data "defaults:defaults" \
+          --add-data "README.md:." \
+          --add-data "LICENSE:." \
+          --onefile \
+          main.py
+        
+        chmod +x dist/unvanquished_map_starter
+        zip -j unvanquished_map_starter_macos.zip dist/unvanquished_map_starter
 
     - name: Build Windows
       if: matrix.os == 'windows-latest'
       run: |
-        python -m PyInstaller main.py --add-data "defaults:defaults" --add-data "README.md:." --add-data "LICENSE:." --onefile --windowed
-        cd dist
-        move main.exe ..\..\unvanquished_map_starter_linux_windows.exe
-        cd ..\
-        rmdir /s /q build
-        rmdir /s /q dist
-        del main.spec
-        cd ..\
+        pyinstaller --name unvanquished_map_starter \
+          --add-data "defaults;defaults" \
+          --add-data "README.md;." \
+          --add-data "LICENSE;." \
+          --onefile \
+          --console \
+          main.py
+        
+        Compress-Archive -Path dist\unvanquished_map_starter.exe -DestinationPath unvanquished_map_starter_windows.zip
 
-
-    - name: List root directory before upload
-      if: matrix.os != 'windows-latest'
-      run: ls -l
-
-    - name: Upload build artifact
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
         path: |
-          ./unvanquished_map_starter_linux.zip
-          ./unvanquished_map_starter_macos.zip
-          ./unvanquished_map_starter_linux_windows.exe
+          unvanquished_map_starter_linux.zip
+          unvanquished_map_starter_macos.zip
+          unvanquished_map_starter_windows.zip
+        if-no-files-found: error
 
   release:
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+    
     steps:
-    - name: Download Linux artifact
+    - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
-        name: build-ubuntu-22.04
-        path: ./artifacts/linux
+        path: ./artifacts
 
-    - name: Download macOS artifact
-      uses: actions/download-artifact@v4
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
       with:
-        name: build-macos-latest
-        path: ./artifacts/macos
+        tag_name: ${{ github.event.inputs.tag }}
+        name: Release ${{ github.event.inputs.tag }}
+        body: |
+          Unvanquished Map Starter ${{ github.event.inputs.tag }}
+          
+          ### Downloads
+          - Linux: `unvanquished_map_starter_linux.zip`
+          - macOS: `unvanquished_map_starter_macos.zip`
+          - Windows: `unvanquished_map_starter_windows.zip`
+        draft: false
+        prerelease: false
+        files: |
+          artifacts/*/unvanquished_map_starter_*.zip
+          artifacts/*/unvanquished_map_starter_*.exe
 
     - name: Download Windows artifact
       uses: actions/download-artifact@v4
