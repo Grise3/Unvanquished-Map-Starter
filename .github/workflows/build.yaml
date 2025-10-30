@@ -60,15 +60,18 @@ jobs:
     - name: Build Windows
       if: matrix.os == 'windows-latest'
       run: |
-        pyinstaller --name unvanquished_map_starter \
-          --add-data "defaults;defaults" \
-          --add-data "README.md;." \
-          --add-data "LICENSE;." \
-          --onefile \
-          --console \
-          main.py
+        $pyinstallerArgs = @(
+          '--name=unvanquished_map_starter',
+          '--add-data=defaults;defaults',
+          '--add-data=README.md;.',
+          '--add-data=LICENSE;.',
+          '--onefile',
+          '--console',
+          'main.py'
+        )
+        pyinstaller @pyinstallerArgs
         
-        Compress-Archive -Path dist\unvanquished_map_starter.exe -DestinationPath unvanquished_map_starter_windows.zip
+        Compress-Archive -Path "dist\unvanquished_map_starter.exe" -DestinationPath "unvanquished_map_starter_windows.zip"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
